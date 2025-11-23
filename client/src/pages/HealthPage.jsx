@@ -9,7 +9,7 @@ export default function HealthPage() {
   }
 
   useEffect(() => {
-    fetch("http://localhost:5000/healthz")
+    fetch("https://short-url-iyw2.onrender.com/healthz")
       .then(toJson)
       .then((data) => setStatus(data))
       .catch((err) => {
