@@ -3,13 +3,20 @@ const validator = require("validator");
 const crypto = require("crypto");
 
 //function to generate short IDs
-function generateShortCode() {
-  return crypto
-    .randomBytes(7)
-    .toString("base64")
-    .replace(/[^a-zA-Z0-9]/g, "")
-    .substring(0, 8);
+function generateShortCode(min = 6, max = 8) {
+  const length = Math.floor(Math.random() * (max - min + 1)) + min;
+
+  let code = "";
+  while (code.length < length) {
+    code += crypto
+      .randomBytes(4)
+      .toString("base64")
+      .replace(/[^a-zA-Z0-9]/g, "");
+  }
+
+  return code.substring(0, length);
 }
+
 
 /**
  * Create shortened url
@@ -29,17 +36,13 @@ exports.createLink = async (req, res) => {
         });
     }
 
-    if (customCode && customCode.length > 8)
-      return res.status(400).json({ error: "Short code length must be 6." });
+    if (customCode && (customCode.length > 8 || customCode.length < 6))
+      return res.status(400).json({ error: "Short code length must be between 6 to 8." });
 
     if (customCode) {
       const existShortCode = await Link.findOne({ shortCode: customCode });
       if (existShortCode) {
-        return createResponse(
-          res,
-          resStatusCode.BAD_REQUEST,
-          "Short url already exist!"
-        );
+        return res.status(409).json({ error: "Short code already exist" });
       }
     } else {
       let existShortCode;
